@@ -20,26 +20,27 @@ void HideCursor()	//隐藏光标
  CONSOLE_CURSOR_INFO cursor_info = {1, 0}; 
  SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
-typedef struct NODE{
-	struct NODE *next;
+typedef struct SNAKE{
+	struct SNAKE *next;
 	int x;
 	int y;
-}Node;
-Node *head;
-char pch,cch;
+}Snake;
+Snake *head;
+int pch,cch;
 int foodx[2];
 int poisonx[2];
 int minex[2];
 int score=0; 
 int speed=400;
-char pause;                                 //var define
+char pause;
+char usrname[20];                                 //var define
 
 void init()
 {
 	HideCursor();
 	displayMessage();
 	Map();
-	head=(Node*)malloc(sizeof(Node));
+	head=(Snake*)malloc(sizeof(Snake));
 	head->x=40;
 	head->y=10;
 	head->next=NULL;
@@ -55,18 +56,18 @@ void init()
 	mine(minex);
 	displaymine(minex);
 	displayscore();
-	while(!_kbhit());  
+	while(!_kbhit())  
     getch();  
     gotoxy(65,13);  
     //printf("空格键暂停游戏");
-	pch=cch='a'; 
+	pch=cch=72; 
 }                          //初始化 
 void displayMessage()
 {
 	gotoxy(65,3);
 	printf("#代表蛇头");
 	gotoxy(65,4);
-	printf("@代表蛇身");
+	printf("*代表蛇身");
 	gotoxy(65,5);
 	printf("&代表食物");
 	gotoxy(65,6);
@@ -87,9 +88,9 @@ void displayscore()
 	gotoxy(65,12);
 	printf("总得分为%d",score);
 }                    //Score List
-void displaySnake(Node *head)
+void displaySnake(Snake *head)
 {
-	Node* first=head;
+	Snake* first=head;
 	while(first!=NULL)
 	{
 		gotoxy(first->x,first->y);
@@ -104,7 +105,11 @@ void mine(int minex[2])
 {  
     srand((unsigned)time(NULL));  
     minex[0]=rand()%48+7;  
-    minex[1]=rand()%24+5;  
+    minex[1]=rand()%24+5;
+	while(!((minex[0]>10)&&(minex[0]<60)&&(minex[1]>0)&&(minex[1]<25))){
+		minex[0]=rand()%24+11;
+		minex[1]=rand()%12+1;
+	}  
 }         //Make Food randomly
 void displaymine(int minex[2])  
 {  
@@ -115,7 +120,11 @@ void food(int foodx[2])
 {  
     srand((unsigned)time(NULL));  
     foodx[0]=rand()%48+11;  
-    foodx[1]=rand()%24+1;  
+    foodx[1]=rand()%24+1;
+	while(!((foodx[0]>10)&&(foodx[0]<60)&&(foodx[1]>0)&&(foodx[1]<25))){
+		foodx[0]=rand()%24+11;
+		foodx[1]=rand()%12+1;
+	}  
 }         //Make Food randomly
 
 void displayfood(int foodx[2])  
@@ -128,17 +137,21 @@ void poison(int poisonx[2])
 	srand((unsigned)time(NULL));
 	poisonx[0]=rand()%24+11;
 	poisonx[1]=rand()%12+1;
+	while(!((poisonx[0]>10)&&(poisonx[0]<60)&&(poisonx[1]>0)&&(poisonx[1]<25))){
+		poisonx[0]=rand()%24+11;
+		poisonx[1]=rand()%12+1;
+	}
 }                      //Make Poison
 void displaypoison(int poisonx[2])
 {
 	gotoxy(poisonx[0],poisonx[1]);
 	printf("!");
 }               //Print Poison
-void insertnew(Node *head,int x,int y)
+void insertnew(Snake *head,int x,int y)
 {
-	Node *newlnk;
-	Node *first=head;
-	newlnk=(Node*)malloc(sizeof(Node));
+	Snake *newlnk;
+	Snake *first=head;
+	newlnk=(Snake*)malloc(sizeof(Snake));
 	newlnk->x=x;
 	newlnk->y=y;
 	while(first->next!=NULL)
@@ -148,12 +161,12 @@ void insertnew(Node *head,int x,int y)
 	first->next=newlnk;
 	newlnk->next=NULL;
 }     //Create one list
-void eatfood(Node *head)
+void eatfood(Snake *head)
 {
-	Node *newlink,*current;
+	Snake *newlink,*current;
 	if((head->x==foodx[0])&&(head->y==foodx[1]))
 	{
-		newlink=(Node*)malloc(sizeof(Node));
+		newlink=(Snake*)malloc(sizeof(Snake));
 		while(head->next!=NULL)
 		{
 			current=head;
@@ -177,9 +190,9 @@ void eatfood(Node *head)
 	}
 	
 }                            //isEatFood 
-void eatpoison(Node *head)
+void eatpoison(Snake *head)
 {
-	Node *current=head;
+	Snake *current=head;
 	
 	if((head->x==poisonx[0])&&(head->y==poisonx[1]))
 	{
@@ -197,8 +210,8 @@ void eatpoison(Node *head)
 	}
 	
 }                        //isEatFood
-void eatMine(Node *head){
-	Node *current;
+void eatMine(Snake *head){
+	Snake *current;
 	int tailX,tailY; 
 	if((head->x==minex[0])&&(head->y==minex[1]))
 	{
@@ -211,12 +224,12 @@ void eatMine(Node *head){
 		current=head;
 		
 		while(current->next!=NULL){
-			if(pch=='a'||pch=='d'){
+			if(pch==75||pch==77){
 				if(current->x==(head->x+tailX)/2||current->next->next==NULL)
 						
 						break;
 			}
-			if(pch=='w'||pch=='s'){
+			if(pch==72||pch==80){
 				if(current->y==(head->y+tailY)/2||current->next->next==NULL)
 						
 						break;		
@@ -252,9 +265,9 @@ void Map()				//Print Map
 	for(j=0;j<50;j++)
 		printf("*");
 }
-int test(Node *head)
+int test(Snake *head)
 {
-	Node *first=head->next;
+	Snake *first=head->next;
 	while(first!=NULL)
 	{
 		if((first->x==head->x)&&(first->y==head->y))
@@ -265,17 +278,19 @@ int test(Node *head)
 	}
 	return 1;
 }        //Test 
-char button()  
+int button()  
 {  
-    char ch=0;  
+    int ch;  
     if(_kbhit())  
     {  
-        while(_kbhit())  
-            ch=getch();  
+    	ch=_getch();
+    	if(ch==244){
+    		  ch=_getch();  
+    	}
     }  
-    return isalpha(ch)?tolower(ch):ch;  
+    return ch; 
 }  										//cin 
-void myclear(Node *head)  
+void myclear(Snake *head)  
 {  
     while(head!=NULL)  
     {  
@@ -285,39 +300,40 @@ void myclear(Node *head)
         
     }  
 }        //del
-void move(Node*head)
+void move(Snake*head)
 {
 	int x1,x2,y1,y2,flag=0;
 	x1=head->x;
 	y1=head->y;
+
 	switch(cch)
 	{
-		case 'w':
-		 		if(pch=='a'||pch=='d')
+		case 72:
+		 		if(pch==75||pch==77)
 				 {
 				 	head->y--;
 				 	flag=1;
 				 	pch=cch;
 				}
 				break;	
-		case 'a':
-				if(pch=='w'||pch=='s')
+		case 75:
+				if(pch==72||pch==80)
 				{
 					head->x--;
 					flag=1;
 					pch=cch;
 				}
 				break;
-		case 's':
-				if(pch=='a'||pch=='d')
+		case 80:
+				if(pch==75||pch==77)
 				{
 					head->y++;
 					flag=1;
 					pch=cch;
 				}
 				break;
-		case 'd':
-				if(pch=='w'||pch=='s')
+		case 77:
+				if(pch==72||pch==80)
 				{
 					head->x++;
 					flag=1;
@@ -329,13 +345,13 @@ void move(Node*head)
 	}                      //Turn 
 	if(flag!=1)
 	{
-		if(pch=='a')
+		if(pch==75)
 			head->x--;
-		else if(pch=='w')
+		else if(pch==72)
 			head->y--;
-		else if(pch=='s')
+		else if(pch==80)
 			head->y++;
-		else if(pch=='d')
+		else if(pch==77)
 			head->x++;		
 	}                 
 	eatfood(head);
@@ -355,6 +371,7 @@ void move(Node*head)
 }
 void game()
 {
+	
 	while((head->x>10)&&(head->x<60)&&(head->y>0)&&(head->y<25))  
     {  
       	if(score<0)
@@ -362,8 +379,11 @@ void game()
         displaySnake(head);  
         Sleep(speed);
         myclear(head); 
-		cch=button(); 
-		pause=(cch==' ')?!pause:pause;
+		cch=button();
+		if(cch==27){
+			exit(0);
+		} 
+		pause=(cch==13)?!pause:pause;
         if(!pause)  
         {  
             gotoxy(62,13);  
@@ -382,18 +402,23 @@ void game()
       		break;
       	
     }
-	if(head->next==NULL){
-		gotoxy(20,12);
-		printf("你见过只有蛇头的蛇吗！？U deserve it!");
-	}else
-		Over();
+	Over();
+	record(); 
 }						
 void Over(){
 	gotoxy(30,12); 
 	printf("GAME OVER!!!");  
 }
 void record(){
-	
+	char s[20];
+	gotoxy(30,13);
+	printf("输入姓名");
+	scanf("%s",usrname);
+	FILE *record;
+	record=fopen("record.txt","wb+");
+	sprintf(s,"%d",score);
+	fscanf(record,"%s%s",usrname,s);
+	fclose(record);
 }
 int main()
 {
