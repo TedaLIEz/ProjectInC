@@ -1,5 +1,5 @@
 /**	This a Program to make a classic snake game
-*	@NODE define the snake's location
+*	@SNAKE define the snake's location
 */
 
 
@@ -15,7 +15,7 @@ void gotoxy(int x,int y)
     P.Y=y;  
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),P);  
 }  
-void HideCursor()	//隐藏光标
+void HideCursor()	
 {
  CONSOLE_CURSOR_INFO cursor_info = {1, 0}; 
  SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
@@ -59,9 +59,8 @@ void init()
 	while(!_kbhit())  
     getch();  
     gotoxy(65,13);  
-    //printf("空格键暂停游戏");
 	pch=cch=72; 
-}                          //初始化 
+}                          
 void displayMessage()
 {
 	gotoxy(65,3);
@@ -72,19 +71,24 @@ void displayMessage()
 	printf("&代表食物");
 	gotoxy(65,6);
 	printf("！代表毒草"); 
+	gotoxy(65,7);
+	printf("@代表地雷"); 
 	gotoxy(65,8);
-	printf("w代表上");
+	printf("方向键上代表上");
 	gotoxy(65,9);
-	printf("s代表下");
+	printf("方向键下代表下");
 	gotoxy(65,10);
-	printf("a代表左");
+	printf("方向键左代表左");
 	gotoxy(65,11);
-	printf("d代表右");
+	printf("方向键右代表右");
 	gotoxy(63,15);
 	printf("按任意键开始游戏"); 
-}                   //信息初始化 
+}                   
 void displayscore()
 {
+	if(score<0){
+		score=0;
+	}
 	gotoxy(65,12);
 	printf("总得分为%d",score);
 }                    //Score List
@@ -110,12 +114,12 @@ void mine(int minex[2])
 		minex[0]=rand()%24+11;
 		minex[1]=rand()%12+1;
 	}  
-}         //Make Food randomly
+}         //Make Mine randomly
 void displaymine(int minex[2])  
 {  
     gotoxy(minex[0],minex[1]);  
     printf("@");  
-}      //Print Food
+}      //Print Mine
 void food(int foodx[2])  
 {  
     srand((unsigned)time(NULL));  
@@ -160,7 +164,7 @@ void insertnew(Snake *head,int x,int y)
 	}
 	first->next=newlnk;
 	newlnk->next=NULL;
-}     //Create one list
+}     //New Snake
 void eatfood(Snake *head)
 {
 	Snake *newlink,*current;
@@ -209,7 +213,7 @@ void eatpoison(Snake *head)
 		score--;
 	}
 	
-}                        //isEatFood
+}                        //isEatPoison
 void eatMine(Snake *head){
 	Snake *current;
 	int tailX,tailY; 
@@ -243,7 +247,7 @@ void eatMine(Snake *head){
 		displaymine(minex);
 		
 	}
-}
+}                       //isEatMine
 void Map()				//Print Map
 {
 	unsigned i,j;
@@ -387,14 +391,14 @@ void game()
         if(!pause)  
         {  
             gotoxy(62,13);  
-            printf("空格键暂停游戏");  
+            printf("回车键暂停游戏");  
             move(head);
 		
         }  
         else  
         {  
             gotoxy(62,13);  
-            printf("空格键继续游戏");  
+            printf("回车键继续游戏");  
         }  
       	
       	displayscore();
@@ -410,15 +414,41 @@ void Over(){
 	printf("GAME OVER!!!");  
 }
 void record(){
-	char s[20];
+	if(score<0){
+		score=0;
+	}
+	char cScore[20];
+	int i;
+	itoa(score,cScore,10);
 	gotoxy(30,13);
 	printf("输入姓名");
+	FILE *fp;
 	scanf("%s",usrname);
-	FILE *record;
-	record=fopen("record.txt","wb+");
-	sprintf(s,"%d",score);
-	fscanf(record,"%s%s",usrname,s);
-	fclose(record);
+		fp=fopen("record.txt","wb");
+		fputs(usrname,fp);
+		i=ftell(fp);
+		fseek(fp,i+3,0);
+		fputs(cScore,fp);
+		fclose(fp);
+	
+	/*if(usrname==NULL){
+		scanf("%s",usrname);
+		fp=fopen("record.txt","wb");
+		fputs(usrname,fp);
+		i=ftell(fp);
+		fseek(fp,i+3,0);
+		fputs(cScore,fp);
+		fclose(fp);
+	}else{
+		scanf("%s",usrname);
+		fp=open("record.txt","wa");
+		fputs(usrname,fp);
+		i=ftell(fp);
+		fseek(fp,i+3,0);
+		fputs(cScore,fp);
+		fclose(fp);
+	}*/
+	
 }
 int main()
 {
