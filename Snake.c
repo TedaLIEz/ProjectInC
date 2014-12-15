@@ -216,27 +216,21 @@ void eatpoison(Snake *head)
 }                        //isEatPoison
 void eatMine(Snake *head){
 	Snake *current;
-	int tailX,tailY; 
+	int count=0; 
+	int i=0;
 	if((head->x==minex[0])&&(head->y==minex[1]))
 	{
 		while(current->next!=NULL)
 		{
+			count++;
 			current=current->next;
 		}
-		tailX=current->x;
-		tailY=current->y;
 		current=head;
 		
 		while(current->next!=NULL){
-			if(pch==75||pch==77){
-				if(current->x==(head->x+tailX)/2||current->next->next==NULL)
-						
-						break;
-			}
-			if(pch==72||pch==80){
-				if(current->y==(head->y+tailY)/2||current->next->next==NULL)
-						
-						break;		
+			i++;
+			if(i==(count+1)/2){
+				break;
 			}
 			current=current->next;
 		}
@@ -424,30 +418,12 @@ void record(){
 	printf(" ‰»Î–’√˚");
 	FILE *fp;
 	scanf("%s",usrname);
-		fp=fopen("record.txt","wb");
-		fputs(usrname,fp);
-		i=ftell(fp);
-		fseek(fp,i+3,0);
-		fputs(cScore,fp);
-		fclose(fp);
 	
-	/*if(usrname==NULL){
-		scanf("%s",usrname);
-		fp=fopen("record.txt","wb");
-		fputs(usrname,fp);
-		i=ftell(fp);
-		fseek(fp,i+3,0);
-		fputs(cScore,fp);
-		fclose(fp);
-	}else{
-		scanf("%s",usrname);
-		fp=open("record.txt","wa");
-		fputs(usrname,fp);
-		i=ftell(fp);
-		fseek(fp,i+3,0);
-		fputs(cScore,fp);
-		fclose(fp);
-	}*/
+	
+	fp=fopen("record.txt","a");
+	fputs(usrname,fp);
+	fputs(cScore,fp);
+	fclose(fp);
 	
 }
 int main()
