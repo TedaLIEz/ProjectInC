@@ -8,6 +8,42 @@
 #include<string.h> 
 #include <windows.h>
 #include <dos.h>
+#define ENTER 0x1C0
+#define ESC   0x011
+#define RIGHT 77
+#define LEFT 75
+#define UP 72
+#define DOWN 80
+typedef struct SNAKE{
+	struct SNAKE *next;
+	int x;
+	int y;
+}Snake;
+Snake *head;
+int pch,cch;
+int foodx[2];
+int poisonx[2];
+int minex[2];
+int score=0; 
+int speed;
+char pause;
+char usrname[20];                                    //var define
+
+void displayMessage();
+void displayscore();
+void displaySnake(Snake *head);
+void mine(int minex[2]);
+void displaymine(int foodx[2]);
+void food(int foodx[2]);
+void displayfood(int foodx[2]);
+void poison(int poisonx[2]);
+void displaypoison(int poisonx[2]);
+void insertnew(Snake *head,int x,int y);
+void Map();
+void Over();
+void record();
+void setlog();
+
 void gotoxy(int x,int y)  
 {  
     COORD P;  
@@ -20,24 +56,21 @@ void HideCursor()
  CONSOLE_CURSOR_INFO cursor_info = {1, 0}; 
  SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
-typedef struct SNAKE{
-	struct SNAKE *next;
-	int x;
-	int y;
-}Snake;
-Snake *head;
-int pch,cch;
-int foodx[2];
-int poisonx[2];
-int minex[2];
-int score=0; 
-int speed=400;
-char pause;
-char usrname[20];                                 //var define
+
 
 void init()
 {
 	HideCursor();
+	printf("选择难度:\n1代表简单\n2代表中等\n3代表难");
+	int lv; 
+	scanf("%d",&lv);
+	if(lv==1){
+		speed=500;
+	}else if(lv==2){
+		speed=400;
+	}else if(lv==3){
+		speed=300;
+	}
 	displayMessage();
 	Map();
 	head=(Snake*)malloc(sizeof(Snake));
@@ -48,18 +81,17 @@ void init()
 	insertnew(head,40,10);
 	insertnew(head,41,10);
 	insertnew(head,42,10);
-	displaySnake(head); 
+	displaySnake(head);
+	
 	poison(poisonx);
-	displaypoison(poisonx);
+	//displaypoison(poisonx);
 	food(foodx);
 	displayfood(foodx);
 	mine(minex);
 	displaymine(minex);
-	displayscore();
-	while(!_kbhit())  
-    getch();  
+	displayscore();	    
     gotoxy(65,13);  
-	pch=cch=72; 
+	pch=cch=UP; 
 }                          
 void displayMessage()
 {
@@ -82,15 +114,32 @@ void displayMessage()
 	gotoxy(65,11);
 	printf("方向键右代表右");
 	gotoxy(63,15);
-	printf("按任意键开始游戏"); 
+	printf("Have Fun!"); 
 }                   
 void displayscore()
 {
-	if(score<0){
-		score=0;
-	}
 	gotoxy(65,12);
 	printf("总得分为%d",score);
+	gotoxy(65,13);
+	if(score==1){
+		printf("FIRST BLOOD");
+	}else if(score==3){
+		printf("KILLING SPREE");
+	}else if(score==4){
+		printf("DOMINATING");
+	}else if(score==5){
+		printf("MEGA-KILL");
+	}else if(score==6){
+		printf("UNSTOPPABLE");
+	}else if(score==7){
+		printf("WICKED SICK");
+	}else if(score==8){
+		printf("MONSTER KILL");
+	}else if(score==9){
+		printf("GODLIKE");
+	}else if(score>=10){
+		printf("BEYOND GODLIKE");
+	}
 }                    //Score List
 void displaySnake(Snake *head)
 {
@@ -138,12 +187,16 @@ void displayfood(int foodx[2])
 }      //Print Food
 void poison(int poisonx[2])
 {
+	int i=0;
 	srand((unsigned)time(NULL));
 	poisonx[0]=rand()%24+11;
 	poisonx[1]=rand()%12+1;
-	while(!((poisonx[0]>10)&&(poisonx[0]<60)&&(poisonx[1]>0)&&(poisonx[1]<25))){
-		poisonx[0]=rand()%24+11;
-		poisonx[1]=rand()%12+1;
+	while((poisonx[0]>10)&&(poisonx[0]<60)&&(poisonx[1]>0)&&(poisonx[1]<25)){
+			displaypoison(poisonx[2]);
+			poisonx[0]=rand()%24+11;
+			poisonx[1]=rand()%12+1;
+			displaypoison(poisonx[2]);
+		
 	}
 }                      //Make Poison
 void displaypoison(int poisonx[2])
@@ -182,12 +235,16 @@ void eatfood(Snake *head)
 		newlink->next=NULL;
 		
 		score++;
-		if((speed>=50)&&(score<=30)&&(score%6==5))  
-            speed-=50;  
-        else if((score<=50)&&(speed>=50))  
-            speed-=10;  
-        else if((speed<=50)&&(speed>=10))  
-            speed-=10;  
+		if(score>5){
+			sLv++;
+			speed-=100;
+		}else if(score>10){
+			sLv++;
+			speed-=100;
+		}else if(score>15){
+			sLv++;
+			speed-=100;
+		}
         food(foodx);
 		displayfood(foodx);
 		
@@ -306,32 +363,32 @@ void move(Snake*head)
 
 	switch(cch)
 	{
-		case 72:
-		 		if(pch==75||pch==77)
+		case UP:
+		 		if(pch==LEFT||pch==RIGHT)
 				 {
 				 	head->y--;
 				 	flag=1;
 				 	pch=cch;
 				}
 				break;	
-		case 75:
-				if(pch==72||pch==80)
+		case LEFT:
+				if(pch==UP||pch==DOWN)
 				{
 					head->x--;
 					flag=1;
 					pch=cch;
 				}
 				break;
-		case 80:
-				if(pch==75||pch==77)
+		case DOWN:
+				if(pch==LEFT||pch==RIGHT)
 				{
 					head->y++;
 					flag=1;
 					pch=cch;
 				}
 				break;
-		case 77:
-				if(pch==72||pch==80)
+		case RIGHT:
+				if(pch==UP||pch==DOWN)
 				{
 					head->x++;
 					flag=1;
@@ -343,13 +400,13 @@ void move(Snake*head)
 	}                      //Turn 
 	if(flag!=1)
 	{
-		if(pch==75)
+		if(pch==LEFT)
 			head->x--;
-		else if(pch==72)
+		else if(pch==UP)
 			head->y--;
-		else if(pch==80)
+		else if(pch==DOWN)
 			head->y++;
-		else if(pch==77)
+		else if(pch==RIGHT)
 			head->x++;		
 	}                 
 	eatfood(head);
@@ -369,29 +426,35 @@ void move(Snake*head)
 }
 void game()
 {
-	
-	while((head->x>10)&&(head->x<60)&&(head->y>0)&&(head->y<25))  
+	int flag=0;
+		while((head->x>10)&&(head->x<60)&&(head->y>0)&&(head->y<25))  
     {  
       	if(score<0)
-		break;  
+			break;
+		if(score>15){
+			break;
+		}  
         displaySnake(head);  
         Sleep(speed);
         myclear(head); 
 		cch=button();
-		if(cch==27){
+		if(cch==ESC){
 			exit(0);
 		} 
-		pause=(cch==13)?!pause:pause;
+		pause=(cch==ENTER)?!pause:pause;
         if(!pause)  
         {  
             gotoxy(62,13);  
             printf("回车键暂停游戏");  
             move(head);
-		
-        }  
+		}  
         else  
-        {  
-            gotoxy(62,13);  
+        {   
+			if(flag==0){
+				flag=1;
+				setlog();
+			}
+			gotoxy(62,13);  
             printf("回车键继续游戏");  
         }  
       	
@@ -400,8 +463,16 @@ void game()
       		break;
       	
     }
-	Over();
-	record(); 
+    	if(score>15){
+    		gotoxy(30,12);
+    		printf("YOU WIN");
+    		record();
+    	}
+    	Over();
+		record();
+		if(cch==ESC){
+			exit(0);
+		} 
 }						
 void Over(){
 	gotoxy(30,12); 
@@ -418,19 +489,31 @@ void record(){
 	printf("输入姓名");
 	FILE *fp;
 	scanf("%s",usrname);
-	
-	
 	fp=fopen("record.txt","a");
 	fputs(usrname,fp);
+	fputs(" Score",fp);
 	fputs(cScore,fp);
 	fclose(fp);
 	
 }
+void setlog(){
+	char cScore[20];
+	char cLv[20];
+	itoa(sLv,cLv,10);
+	itoa(score,cScore,10);
+	FILE *log;
+	log=fopen("log.txt","a");
+	fputs("Current Score",log);
+	fputs(cScore,log);
+	fputs("Current Level",log);
+	fputs(cLv,log);
+	fclose(log);
+}
 int main()
 {
-	init();
-	game();
-	record();
-	return 0;
+		init();
+		game();
+		//record();
+		return 0;
 }
 
