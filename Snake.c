@@ -8,7 +8,7 @@
 #include<string.h> 
 #include <windows.h>
 #include <dos.h>
-#define ENTER 0x1C0
+#define ENTER 13
 #define ESC   0x011
 #define RIGHT 77
 #define LEFT 75
@@ -20,12 +20,18 @@ typedef struct SNAKE{
 	int y;
 }Snake;
 Snake *head;
+typedef struct USER{
+	char username[20];
+	int score;
+}User;
+User *user;
 int pch,cch;
 int foodx[2];
 int poisonx[2];
 int minex[2];
 int score=0; 
 int speed;
+int sLv;
 char pause;
 char usrname[20];                                    //var define
 
@@ -43,6 +49,7 @@ void Map();
 void Over();
 void record();
 void setlog();
+void restart();
 
 void gotoxy(int x,int y)  
 {  
@@ -71,6 +78,7 @@ void init()
 	}else if(lv==3){
 		speed=300;
 	}
+	system("cls"); 
 	displayMessage();
 	Map();
 	head=(Snake*)malloc(sizeof(Snake));
@@ -84,7 +92,7 @@ void init()
 	displaySnake(head);
 	
 	poison(poisonx);
-	//displaypoison(poisonx);
+	displaypoison(poisonx);
 	food(foodx);
 	displayfood(foodx);
 	mine(minex);
@@ -120,7 +128,7 @@ void displayscore()
 {
 	gotoxy(65,12);
 	printf("总得分为%d",score);
-	gotoxy(65,13);
+	gotoxy(65,14);
 	if(score==1){
 		printf("FIRST BLOOD");
 	}else if(score==3){
@@ -191,7 +199,7 @@ void poison(int poisonx[2])
 	srand((unsigned)time(NULL));
 	poisonx[0]=rand()%24+11;
 	poisonx[1]=rand()%12+1;
-	while((poisonx[0]>10)&&(poisonx[0]<60)&&(poisonx[1]>0)&&(poisonx[1]<25)){
+	while(!((poisonx[0]>10)&&(poisonx[0]<60)&&(poisonx[1]>0)&&(poisonx[1]<25))){
 			displaypoison(poisonx);
 			poisonx[0]=rand()%24+11;
 			poisonx[1]=rand()%12+1;
@@ -236,13 +244,13 @@ void eatfood(Snake *head)
 		
 		score++;
 		if(score>5){
-			//sLv++;
+			sLv++;
 			speed-=100;
 		}else if(score>10){
-			//sLv++;
+			sLv++;
 			speed-=100;
 		}else if(score>15){
-			//sLv++;
+			sLv++;
 			speed-=100;
 		}
         food(foodx);
@@ -470,10 +478,24 @@ void game()
     	}
     	Over();
 		record();
+		restart(); 
 		if(cch==ESC){
 			exit(0);
 		} 
-}						
+}				
+void restart(){
+	system("cls");
+	gotoxy(25,12);
+	printf("Do You Want to Play Again?  Y/N");
+	if(getch()=='y'||'Y'){
+		gotoxy(0,0);
+		system("cls");
+		init();
+		game();
+	}else if(getch()=='n'||'N'){
+		exit(0);
+	} 
+}		
 void Over(){
 	gotoxy(30,12); 
 	printf("GAME OVER!!!");  
@@ -499,7 +521,7 @@ void record(){
 void setlog(){
 	char cScore[20];
 	char cLv[20];
-	//itoa(sLv,cLv,10);
+	itoa(sLv,cLv,10);
 	itoa(score,cScore,10);
 	FILE *log;
 	log=fopen("log.txt","a");
