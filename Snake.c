@@ -192,10 +192,10 @@ void poison(int poisonx[2])
 	poisonx[0]=rand()%24+11;
 	poisonx[1]=rand()%12+1;
 	while((poisonx[0]>10)&&(poisonx[0]<60)&&(poisonx[1]>0)&&(poisonx[1]<25)){
-			displaypoison(poisonx[2]);
+			displaypoison(poisonx);
 			poisonx[0]=rand()%24+11;
 			poisonx[1]=rand()%12+1;
-			displaypoison(poisonx[2]);
+			displaypoison(poisonx);
 		
 	}
 }                      //Make Poison
@@ -236,13 +236,13 @@ void eatfood(Snake *head)
 		
 		score++;
 		if(score>5){
-			sLv++;
+			//sLv++;
 			speed-=100;
 		}else if(score>10){
-			sLv++;
+			//sLv++;
 			speed-=100;
 		}else if(score>15){
-			sLv++;
+			//sLv++;
 			speed-=100;
 		}
         food(foodx);
@@ -499,7 +499,7 @@ void record(){
 void setlog(){
 	char cScore[20];
 	char cLv[20];
-	itoa(sLv,cLv,10);
+	//itoa(sLv,cLv,10);
 	itoa(score,cScore,10);
 	FILE *log;
 	log=fopen("log.txt","a");
